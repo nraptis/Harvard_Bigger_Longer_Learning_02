@@ -59,7 +59,7 @@ def result(board, action):
         raise ValueError
     res = copy.deepcopy(board)
     res[action[0]][action[1]] = player(board)
-    print("applied ", action, " for ", player(board), "to ", board, " and got ", res)
+    #print("applied ", action, " for ", player(board), "to ", board, " and got ", res)
     return res
 
 def any_row_matches(board, symbol):
@@ -124,44 +124,48 @@ def utility(board):
     else:
         return 0
 
-def min_value(board):
+best_action = (-1, -1)
+
+def min_value(board, depth):
+    global best_action
     if terminal(board):
         return utility(board)
     v = 1000
     for action in actions(board):
         new_board = result(board, action)
-        v = min(v, max_value(new_board))
+        new_value = max_value(new_board, depth + 1)
+        if new_value < v:
+            v = new_value
+            if depth == 0:
+                best_action = action
+                print("New Best Movie For O: ", action, " Value Was ", v)
     return v
 
-def max_value(board):
+def max_value(board, depth):
+    global best_action
     if terminal(board):
         return utility(board)
     v = -1000
     for action in actions(board):
         new_board = result(board, action)
-        v = max(v, min_value(new_board))
+        new_value = min_value(new_board, depth + 1)
+        if new_value > v:
+            v = new_value
+            if depth == 0:
+                best_action = action
+                print("New Best Movie For X: ", action, " Value Was ", v)
     return v
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    res = (-1, -1)
+    global best_action
+    best_action = (-1, -1)
     _player = player(board)
     if _player == X:
-        v = -100
-        for action in actions(board):
-            result_value = max_value(board)
-            if result_value > v:
-                v = result_value
-                res = action
-            print("fulle explored: ", action)
+        max_value(board, 0)
     elif _player == O:
-        v = 100
-        for action in actions(board):
-            result_value = min_value(board)
-            if result_value < v:
-                v = result_value
-                res = action
-            print("fulle explored: ", action)
-    return res
+        min_value(board, 0)
+    print("best_action = ", best_action)
+    return best_action
