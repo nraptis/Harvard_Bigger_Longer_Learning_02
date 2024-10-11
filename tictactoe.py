@@ -9,7 +9,6 @@ X = "X"
 O = "O"
 EMPTY = None
 
-
 def initial_state():
     """
     Returns starting state of the board.
@@ -60,6 +59,7 @@ def result(board, action):
         raise ValueError
     res = copy.deepcopy(board)
     res[action[0]][action[1]] = player(board)
+    print("applied ", action, " for ", player(board), "to ", board, " and got ", res)
     return res
 
 def any_row_matches(board, symbol):
@@ -86,22 +86,16 @@ def winner(board):
     Returns the winner of the game, if there is one.
     """
     if any_row_matches(board, X):
-        print("matched x on row")
         return X
     if any_column_matches(board, X):
-        print("matched x on column")
         return X
     if any_diagonal_matches(board, X):
-        print("matched x on diagonal")
         return X
     if any_row_matches(board, O):
-        print("matched o on row")
         return O
     if any_column_matches(board, O):
-        print("matched o on column")
         return O
     if any_diagonal_matches(board, O):
-        print("matched o on diagonal")
         return O
     return None
 
@@ -113,8 +107,8 @@ def terminal(board):
         for i in range(0, 3):
             for j in range(0, 3):
                 if board[i][j] == EMPTY:
-                    return True
-        return False
+                    return False
+        return True
     else:
         return True
 
@@ -130,30 +124,44 @@ def utility(board):
     else:
         return 0
 
+def min_value(board):
+    if terminal(board):
+        return utility(board)
+    v = 1000
+    for action in actions(board):
+        new_board = result(board, action)
+        v = min(v, max_value(new_board))
+    return v
+
+def max_value(board):
+    if terminal(board):
+        return utility(board)
+    v = -1000
+    for action in actions(board):
+        new_board = result(board, action)
+        v = max(v, min_value(new_board))
+    return v
+
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
-
-board = initial_state()
-print(board)
-
-board[0][0] = X
-print(board)
-board[1][1] = X
-print(board)
-board[2][2] = X
-print(board)
-
-
-
-_player = player(board)
-print(_player)
-
-print(utility(board))
-
-#board[0][2] = O
-#print(board)
-
-
+    res = (-1, -1)
+    _player = player(board)
+    if _player == X:
+        v = -100
+        for action in actions(board):
+            result_value = max_value(board)
+            if result_value > v:
+                v = result_value
+                res = action
+            print("fulle explored: ", action)
+    elif _player == O:
+        v = 100
+        for action in actions(board):
+            result_value = min_value(board)
+            if result_value < v:
+                v = result_value
+                res = action
+            print("fulle explored: ", action)
+    return res
