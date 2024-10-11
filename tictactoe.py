@@ -2,6 +2,7 @@
 Tic Tac Toe Player
 """
 
+import copy
 import math
 
 X = "X"
@@ -39,28 +40,27 @@ def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
     """
-    raise NotImplementedError
+    res = []
+    for i in range(0, 3):
+        for j in range(0, 3):
+            if board[i][j] == EMPTY:
+                res.append((i, j))
+    return res
 
 
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    raise NotImplementedError
-
-
-def winner(board):
-    """
-    Returns the winner of the game, if there is one.
-    """
-    raise NotImplementedError
-
-
-def terminal(board):
-    """
-    Returns True if game is over, False otherwise.
-    """
-    raise NotImplementedError
+    if action[0] < 0 or action[0] > 2:
+        raise IndexError
+    if action[1] < 0 or action[1] > 2:
+        raise IndexError
+    if board[action[0]][action[1]] != EMPTY:
+        raise ValueError
+    res = copy.deepcopy(board)
+    res[action[0]][action[1]] = player(board)
+    return res
 
 def any_row_matches(board, symbol):
     for j in range(0, 3):
@@ -81,29 +81,54 @@ def any_diagonal_matches(board, symbol):
         return True
     return False
 
+def winner(board):
+    """
+    Returns the winner of the game, if there is one.
+    """
+    if any_row_matches(board, X):
+        print("matched x on row")
+        return X
+    if any_column_matches(board, X):
+        print("matched x on column")
+        return X
+    if any_diagonal_matches(board, X):
+        print("matched x on diagonal")
+        return X
+    if any_row_matches(board, O):
+        print("matched o on row")
+        return O
+    if any_column_matches(board, O):
+        print("matched o on column")
+        return O
+    if any_diagonal_matches(board, O):
+        print("matched o on diagonal")
+        return O
+    return None
+
+def terminal(board):
+    """
+    Returns True if game is over, False otherwise.
+    """
+    if winner(board) == None:
+        for i in range(0, 3):
+            for j in range(0, 3):
+                if board[i][j] == EMPTY:
+                    return True
+        return False
+    else:
+        return True
+
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    if any_row_matches(board, X):
-        print("matched x on row")
+    _winner = winner(board)
+    if _winner == X:
         return 1
-    if any_column_matches(board, X):
-        print("matched x on column")
-        return 1
-    if any_diagonal_matches(board, X):
-        print("matched x on diagonal")
-        return 1
-    if any_row_matches(board, O):
-        print("matched o on row")
+    elif _winner == O:
         return -1
-    if any_column_matches(board, O):
-        print("matched o on column")
-        return -1
-    if any_diagonal_matches(board, O):
-        print("matched o on diagonal")
-        return -1
-    return 0
+    else:
+        return 0
 
 def minimax(board):
     """
