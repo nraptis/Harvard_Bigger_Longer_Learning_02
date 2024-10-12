@@ -59,7 +59,6 @@ def result(board, action):
         raise ValueError
     res = copy.deepcopy(board)
     res[action[0]][action[1]] = player(board)
-    #print("applied ", action, " for ", player(board), "to ", board, " and got ", res)
     return res
 
 def any_row_matches(board, symbol):
@@ -81,21 +80,22 @@ def any_diagonal_matches(board, symbol):
         return True
     return False
 
+def any_matches(board, symbol):
+    if any_row_matches(board, symbol):
+        return True
+    if any_column_matches(board, symbol):
+        return True
+    if any_diagonal_matches(board, symbol):
+        return True
+    return False
+
 def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    if any_row_matches(board, X):
+    if any_matches(board, X):
         return X
-    if any_column_matches(board, X):
-        return X
-    if any_diagonal_matches(board, X):
-        return X
-    if any_row_matches(board, O):
-        return O
-    if any_column_matches(board, O):
-        return O
-    if any_diagonal_matches(board, O):
+    if any_matches(board, O):
         return O
     return None
 
@@ -116,21 +116,18 @@ def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    _winner = winner(board)
-    if _winner == X:
+    if winner(board) == X:
         return 1
-    elif _winner == O:
+    elif winner(board) == O:
         return -1
     else:
         return 0
-
-best_action = (-1, -1)
 
 def min_value(board, depth):
     global best_action
     if terminal(board):
         return utility(board)
-    v = 1000
+    v = 2
     for action in actions(board):
         new_board = result(board, action)
         new_value = max_value(new_board, depth + 1)
@@ -138,14 +135,13 @@ def min_value(board, depth):
             v = new_value
             if depth == 0:
                 best_action = action
-                print("New Best Movie For O: ", action, " Value Was ", v)
     return v
 
 def max_value(board, depth):
     global best_action
     if terminal(board):
         return utility(board)
-    v = -1000
+    v = -2
     for action in actions(board):
         new_board = result(board, action)
         new_value = min_value(new_board, depth + 1)
@@ -153,7 +149,6 @@ def max_value(board, depth):
             v = new_value
             if depth == 0:
                 best_action = action
-                print("New Best Movie For X: ", action, " Value Was ", v)
     return v
 
 def minimax(board):
@@ -167,5 +162,4 @@ def minimax(board):
         max_value(board, 0)
     elif _player == O:
         min_value(board, 0)
-    print("best_action = ", best_action)
     return best_action
